@@ -130,6 +130,15 @@ app_ui = ui.page_fluid(
                 border-bottom: 1px solid #dee2e6;
                 font-weight: bold;
             }
+            .nav-button:hover {
+                background-color: #0056b3 !important;
+                color: white !important;
+            }
+            .nav-button.active {
+                background-color: #007bff !important;
+                color: white !important;
+                border-color: #007bff !important;
+            }
         """)
     ),
     
@@ -159,16 +168,24 @@ app_ui = ui.page_fluid(
             ui.div(
                 {"class": "col-md-3 col-lg-2 sidebar"},
                 h3("Navigation"),
-                ui.navset_pill_list(
-                    ui.nav_panel("Dashboard", "dashboard"),
-                    ui.nav_panel("Maintenance", "maintenance"),
-                    ui.nav_panel("Inventory", "inventory"),
-                    ui.nav_panel("Financial", "financial"),
-                    ui.nav_panel("Tasks", "tasks"),
-                    ui.nav_panel("Documents", "documents"),
-                    ui.nav_panel("Analytics", "analytics"),
-                    ui.nav_panel("Settings", "settings"),
-                    id="main_nav"
+                ui.div(
+                    {"class": "nav flex-column"},
+                    ui.input_action_button("nav_dashboard", "📊 Dashboard", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_maintenance", "🔧 Maintenance", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_inventory", "📦 Inventory", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_financial", "💰 Financial", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_tasks", "✅ Tasks", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_documents", "📄 Documents", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_analytics", "📈 Analytics", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button"),
+                    ui.input_action_button("nav_settings", "⚙️ Settings", 
+                                          class_="btn btn-outline-primary w-100 mb-2 text-start nav-button")
                 )
             ),
             
@@ -199,11 +216,46 @@ def server(input, output, session):
         except Exception as e:
             print(f"Error initializing app: {e}")
     
-    # Navigation handler
+    # Navigation handlers
     @reactive.Effect
-    @reactive.event(input.main_nav)
-    def _handle_navigation():
-        current_page.set(input.main_nav())
+    @reactive.event(input.nav_dashboard)
+    def _handle_dashboard():
+        current_page.set("dashboard")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_maintenance)
+    def _handle_maintenance():
+        current_page.set("maintenance")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_inventory)
+    def _handle_inventory():
+        current_page.set("inventory")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_financial)
+    def _handle_financial():
+        current_page.set("financial")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_tasks)
+    def _handle_tasks():
+        current_page.set("tasks")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_documents)
+    def _handle_documents():
+        current_page.set("documents")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_analytics)
+    def _handle_analytics():
+        current_page.set("analytics")
+    
+    @reactive.Effect
+    @reactive.event(input.nav_settings)
+    def _handle_settings():
+        current_page.set("settings")
     
     # Main content renderer
     @output
@@ -464,6 +516,10 @@ def server(input, output, session):
         """Render maintenance management page"""
         return ui.div(
             h2("🔧 Maintenance Management"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Maintenance page."
+            ),
             ui.p("Maintenance management features will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
@@ -475,6 +531,10 @@ def server(input, output, session):
         """Render inventory management page"""
         return ui.div(
             h2("📦 Inventory Management"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Inventory page."
+            ),
             ui.p("Inventory management features will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
@@ -486,6 +546,10 @@ def server(input, output, session):
         """Render financial management page"""
         return ui.div(
             h2("💰 Financial Management"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Financial page."
+            ),
             ui.p("Financial management features will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
@@ -497,6 +561,10 @@ def server(input, output, session):
         """Render task management page"""
         return ui.div(
             h2("✅ Task Management"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Tasks page."
+            ),
             ui.p("Task management features will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
@@ -508,6 +576,10 @@ def server(input, output, session):
         """Render document management page"""
         return ui.div(
             h2("📄 Document Management"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Documents page."
+            ),
             ui.p("Document management features will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
@@ -519,6 +591,10 @@ def server(input, output, session):
         """Render analytics page"""
         return ui.div(
             h2("📈 Analytics & Reporting"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Analytics page."
+            ),
             ui.p("Analytics and reporting features will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
@@ -530,6 +606,10 @@ def server(input, output, session):
         """Render settings page"""
         return ui.div(
             h2("⚙️ Settings"),
+            ui.div(
+                {"class": "alert alert-success mb-3"},
+                "✅ Navigation working! You are now on the Settings page."
+            ),
             ui.p("Application settings will be implemented here."),
             ui.div(
                 {"class": "alert alert-info"},
