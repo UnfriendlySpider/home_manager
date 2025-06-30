@@ -5,7 +5,7 @@ Handles user authentication, session management, and security
 
 from datetime import datetime, timedelta
 from typing import Optional, Union
-import jwt
+from jose import jwt
 from passlib.context import CryptContext
 from config.settings import settings
 

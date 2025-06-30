@@ -74,8 +74,8 @@ def init_database():
     Creates all tables defined in models.
     """
     try:
-        # Import all models to ensure they are registered
-        from models import user, maintenance, inventory, financial, tasks, documents
+        # Import all existing models to ensure they are registered
+        from models import user, maintenance
         
         # Create all tables
         Base.metadata.create_all(bind=engine)
@@ -196,9 +196,10 @@ def restore_database(backup_path: str):
 def check_database_health() -> bool:
     """Check if database is accessible and responsive"""
     try:
+        from sqlalchemy import text
         db = SessionLocal()
         # Simple query to test connection
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         return True
     except Exception as e:

@@ -4,7 +4,7 @@ Handles home maintenance schedules, history, and service providers
 """
 
 from datetime import datetime, date
-from sqlalchemy import Column, String, Text, Decimal, Boolean, Date, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, Text, Numeric, Boolean, Date, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from models.base import BaseModel
 
@@ -32,9 +32,9 @@ class MaintenanceItem(BaseModel):
     is_active = Column(Boolean, default=True, nullable=False)
     
     # Cost information
-    estimated_cost = Column(Decimal(10, 2), nullable=True)
-    actual_cost = Column(Decimal(10, 2), nullable=True)
-    budget_alert_threshold = Column(Decimal(10, 2), nullable=True)
+    estimated_cost = Column(Numeric(10, 2), nullable=True)
+    actual_cost = Column(Numeric(10, 2), nullable=True)
+    budget_alert_threshold = Column(Numeric(10, 2), nullable=True)
     
     # Service provider information
     preferred_provider = Column(String(200), nullable=True)
@@ -122,8 +122,8 @@ class MaintenanceHistory(BaseModel):
     
     # Completion details
     completion_date = Column(Date, nullable=False)
-    actual_cost = Column(Decimal(10, 2), nullable=True)
-    duration_hours = Column(Decimal(5, 2), nullable=True)
+    actual_cost = Column(Numeric(10, 2), nullable=True)
+    duration_hours = Column(Numeric(5, 2), nullable=True)
     
     # Service details
     service_provider = Column(String(200), nullable=True)
@@ -185,8 +185,8 @@ class ServiceProvider(BaseModel):
     # Service information
     specialties = Column(Text, nullable=True)  # JSON string with service categories
     service_area = Column(String(200), nullable=True)
-    hourly_rate = Column(Decimal(8, 2), nullable=True)
-    minimum_charge = Column(Decimal(8, 2), nullable=True)
+    hourly_rate = Column(Numeric(8, 2), nullable=True)
+    minimum_charge = Column(Numeric(8, 2), nullable=True)
     
     # Business details
     license_number = Column(String(100), nullable=True)
@@ -195,7 +195,7 @@ class ServiceProvider(BaseModel):
     years_in_business = Column(Integer, nullable=True)
     
     # Ratings and reviews
-    overall_rating = Column(Decimal(3, 2), nullable=True)  # 0.00 - 5.00
+    overall_rating = Column(Numeric(3, 2), nullable=True)  # 0.00 - 5.00
     total_reviews = Column(Integer, default=0, nullable=False)
     
     # Status and preferences

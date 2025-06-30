@@ -159,18 +159,16 @@ app_ui = ui.page_fluid(
             ui.div(
                 {"class": "col-md-3 col-lg-2 sidebar"},
                 h3("Navigation"),
-                ui.nav_panel(
-                    ui.navset_pill_list(
-                        ui.nav_panel("Dashboard", "dashboard"),
-                        ui.nav_panel("Maintenance", "maintenance"),
-                        ui.nav_panel("Inventory", "inventory"),
-                        ui.nav_panel("Financial", "financial"),
-                        ui.nav_panel("Tasks", "tasks"),
-                        ui.nav_panel("Documents", "documents"),
-                        ui.nav_panel("Analytics", "analytics"),
-                        ui.nav_panel("Settings", "settings"),
-                        id="main_nav"
-                    )
+                ui.navset_pill_list(
+                    ui.nav_panel("Dashboard", "dashboard"),
+                    ui.nav_panel("Maintenance", "maintenance"),
+                    ui.nav_panel("Inventory", "inventory"),
+                    ui.nav_panel("Financial", "financial"),
+                    ui.nav_panel("Tasks", "tasks"),
+                    ui.nav_panel("Documents", "documents"),
+                    ui.nav_panel("Analytics", "analytics"),
+                    ui.nav_panel("Settings", "settings"),
+                    id="main_nav"
                 )
             ),
             
