@@ -26,6 +26,7 @@ from config.auth import session_manager, auth_manager
 # Import models
 from models.user import User
 from models.maintenance import MaintenanceItem
+from models.task import Task, TaskComment, TaskStatus, TaskPriority, TaskCategory
 
 # Import modules (will be created)
 # from modules.dashboard.ui import dashboard_ui
@@ -36,53 +37,123 @@ def create_sample_data():
     try:
         db = next(get_database())
         
-        # Check if we already have data
-        existing_items = db.query(MaintenanceItem).first()
-        if existing_items:
-            return  # Data already exists
+        # Check if we already have maintenance data
+        existing_maintenance = db.query(MaintenanceItem).first()
+        if not existing_maintenance:
+            # Create sample maintenance items
+            sample_maintenance = [
+                MaintenanceItem(
+                    name="HVAC Filter Replacement",
+                    description="Replace air filter in main HVAC system",
+                    category="HVAC",
+                    location="Basement",
+                    frequency="monthly",
+                    frequency_months=1,
+                    next_due_date=date.today() + timedelta(days=15),
+                    priority="medium",
+                    estimated_cost=25.00,
+                    created_by="1"
+                ),
+                MaintenanceItem(
+                    name="Gutter Cleaning",
+                    description="Clean gutters and downspouts",
+                    category="Exterior",
+                    location="Roof",
+                    frequency="quarterly",
+                    frequency_months=6,
+                    next_due_date=date.today() + timedelta(days=45),
+                    priority="high",
+                    estimated_cost=150.00,
+                    created_by="1"
+                ),
+                MaintenanceItem(
+                    name="Water Heater Inspection",
+                    description="Annual water heater maintenance and inspection",
+                    category="Plumbing",
+                    location="Basement",
+                    frequency="yearly",
+                    frequency_months=12,
+                    next_due_date=date.today() + timedelta(days=90),
+                    priority="medium",
+                    estimated_cost=120.00,
+                    created_by="1"
+                )
+            ]
+            
+            for item in sample_maintenance:
+                db.add(item)
         
-        # Create sample maintenance items
-        sample_items = [
-            MaintenanceItem(
-                name="HVAC Filter Replacement",
-                description="Replace air filter in main HVAC system",
-                category="HVAC",
-                location="Basement",
-                frequency="monthly",
-                frequency_months=1,
-                next_due_date=date.today() + timedelta(days=15),
-                priority="medium",
-                estimated_cost=25.00,
-                created_by="1"
-            ),
-            MaintenanceItem(
-                name="Gutter Cleaning",
-                description="Clean gutters and downspouts",
-                category="Exterior",
-                location="Roof",
-                frequency="quarterly",
-                frequency_months=6,
-                next_due_date=date.today() + timedelta(days=45),
-                priority="high",
-                estimated_cost=150.00,
-                created_by="1"
-            ),
-            MaintenanceItem(
-                name="Water Heater Inspection",
-                description="Annual water heater maintenance and inspection",
-                category="Plumbing",
-                location="Basement",
-                frequency="yearly",
-                frequency_months=12,
-                next_due_date=date.today() + timedelta(days=90),
-                priority="medium",
-                estimated_cost=120.00,
-                created_by="1"
-            )
-        ]
-        
-        for item in sample_items:
-            db.add(item)
+        # Check if we already have task data
+        existing_tasks = db.query(Task).first()
+        if not existing_tasks:
+            # Create sample tasks
+            sample_tasks = [
+                Task(
+                    title="Clean Kitchen",
+                    description="Deep clean kitchen including appliances and counters",
+                    category=TaskCategory.CLEANING,
+                    priority=TaskPriority.HIGH,
+                    assigned_to="Mom",
+                    created_by="Admin",
+                    due_date=date.today() + timedelta(days=2),
+                    location="Kitchen"
+                ),
+                Task(
+                    title="Fix Leaky Faucet", 
+                    description="Repair the bathroom faucet that's been dripping",
+                    category=TaskCategory.MAINTENANCE,
+                    priority=TaskPriority.MEDIUM,
+                    assigned_to="Dad",
+                    created_by="Admin",
+                    due_date=date.today() + timedelta(days=5),
+                    location="Bathroom"
+                ),
+                Task(
+                    title="Grocery Shopping",
+                    description="Weekly grocery shopping - check list on fridge",
+                    category=TaskCategory.SHOPPING,
+                    priority=TaskPriority.MEDIUM,
+                    assigned_to="Mom",
+                    created_by="Admin",
+                    due_date=date.today() + timedelta(days=1),
+                    location="Grocery Store"
+                ),
+                Task(
+                    title="Organize Garage",
+                    description="Sort and organize items in garage, donate unused items",
+                    category=TaskCategory.ORGANIZING,
+                    priority=TaskPriority.LOW,
+                    assigned_to="Dad",
+                    created_by="Admin",
+                    due_date=date.today() + timedelta(days=14),
+                    location="Garage"
+                ),
+                Task(
+                    title="Water Plants",
+                    description="Water all indoor and outdoor plants",
+                    category=TaskCategory.GARDENING,
+                    priority=TaskPriority.HIGH,
+                    assigned_to="Kid1",
+                    created_by="Admin",
+                    due_date=date.today(),
+                    location="House & Garden"
+                ),
+                Task(
+                    title="Vacuum Living Room",
+                    description="Vacuum and tidy up the living room",
+                    category=TaskCategory.CLEANING,
+                    priority=TaskPriority.MEDIUM,
+                    status=TaskStatus.COMPLETED,
+                    assigned_to="Kid2",
+                    created_by="Admin",
+                    due_date=date.today() - timedelta(days=1),
+                    completed_date=datetime.now() - timedelta(days=1),
+                    location="Living Room"
+                )
+            ]
+            
+            for task in sample_tasks:
+                db.add(task)
         
         db.commit()
         print("Sample data created successfully")
@@ -97,6 +168,31 @@ app_ui = ui.page_fluid(
     # Custom CSS
     tags.head(
         tags.link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"),
+        tags.script("""
+            // Task management client-side functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add hover effects to task cards
+                const taskCards = document.querySelectorAll('.task-card');
+                taskCards.forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-2px)';
+                        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                    });
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0)';
+                        this.style.boxShadow = '';
+                    });
+                });
+                
+                // Auto-refresh task list every 30 seconds
+                setInterval(function() {
+                    const refreshBtn = document.getElementById('refresh_tasks');
+                    if (refreshBtn) {
+                        refreshBtn.click();
+                    }
+                }, 30000);
+            });
+        """),
         tags.style("""
             .sidebar {
                 background-color: #f8f9fa;
@@ -138,6 +234,37 @@ app_ui = ui.page_fluid(
                 background-color: #007bff !important;
                 color: white !important;
                 border-color: #007bff !important;
+            }
+            .task-card {
+                transition: all 0.3s ease;
+            }
+            .task-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            .task-priority-urgent {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.7; }
+                100% { opacity: 1; }
+            }
+            .task-overdue {
+                border-left: 4px solid #dc3545;
+                background-color: #fff5f5;
+            }
+            .task-due-soon {
+                border-left: 4px solid #ffc107;
+                background-color: #fffbf0;
+            }
+            .task-completed {
+                opacity: 0.8;
+                background-color: #f8f9fa;
+            }
+            .badge-category {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
             }
         """)
     ),
@@ -561,14 +688,150 @@ def server(input, output, session):
         """Render task management page"""
         return ui.div(
             h2("✅ Task Management"),
+            
+            # Task creation form
             ui.div(
-                {"class": "alert alert-success mb-3"},
-                "✅ Navigation working! You are now on the Tasks page."
+                {"class": "row mb-4"},
+                ui.div(
+                    {"class": "col-12"},
+                    ui.div(
+                        {"class": "card"},
+                        ui.div({"class": "card-header"}, "📝 Create New Task"),
+                        ui.div(
+                            {"class": "card-body"},
+                            ui.div(
+                                {"class": "row"},
+                                ui.div(
+                                    {"class": "col-md-6"},
+                                    ui.input_text("task_title", "Task Title", placeholder="Enter task title..."),
+                                    ui.input_select(
+                                        "task_category",
+                                        "Category",
+                                        choices={
+                                            "cleaning": "🧹 Cleaning",
+                                            "maintenance": "🔧 Maintenance", 
+                                            "shopping": "🛒 Shopping",
+                                            "organizing": "📦 Organizing",
+                                            "gardening": "🌱 Gardening",
+                                            "admin": "📋 Administrative",
+                                            "other": "📌 Other"
+                                        },
+                                        selected="other"
+                                    ),
+                                    ui.input_select(
+                                        "task_priority",
+                                        "Priority",
+                                        choices={
+                                            "low": "🔵 Low",
+                                            "medium": "🟡 Medium",
+                                            "high": "🟠 High", 
+                                            "urgent": "🔴 Urgent"
+                                        },
+                                        selected="medium"
+                                    )
+                                ),
+                                ui.div(
+                                    {"class": "col-md-6"},
+                                    ui.input_text("task_assigned_to", "Assign To", placeholder="Family member name..."),
+                                    ui.input_date("task_due_date", "Due Date"),
+                                    ui.input_text("task_location", "Location", placeholder="Where should this be done?")
+                                )
+                            ),
+                            ui.input_text_area("task_description", "Description", placeholder="Task details and instructions..."),
+                            ui.div(
+                                {"class": "mt-3"},
+                                ui.input_action_button("create_task", "Create Task", class_="btn btn-primary"),
+                                ui.input_action_button("clear_task_form", "Clear Form", class_="btn btn-secondary ms-2")
+                            )
+                        )
+                    )
+                )
             ),
-            ui.p("Task management features will be implemented here."),
+            
+            # Task filters and controls
             ui.div(
-                {"class": "alert alert-info"},
-                "This module is under development. Features will include task assignment, progress tracking, and family coordination."
+                {"class": "row mb-4"},
+                ui.div(
+                    {"class": "col-12"},
+                    ui.div(
+                        {"class": "card"},
+                        ui.div({"class": "card-header"}, "🔍 Filter & View Tasks"),
+                        ui.div(
+                            {"class": "card-body"},
+                            ui.div(
+                                {"class": "row"},
+                                ui.div(
+                                    {"class": "col-md-3"},
+                                    ui.input_select(
+                                        "filter_status",
+                                        "Status",
+                                        choices={
+                                            "all": "All Tasks",
+                                            "pending": "Pending",
+                                            "in_progress": "In Progress",
+                                            "completed": "Completed",
+                                            "overdue": "Overdue"
+                                        },
+                                        selected="all"
+                                    )
+                                ),
+                                ui.div(
+                                    {"class": "col-md-3"},
+                                    ui.input_select(
+                                        "filter_category",
+                                        "Category",
+                                        choices={
+                                            "all": "All Categories",
+                                            "cleaning": "Cleaning",
+                                            "maintenance": "Maintenance",
+                                            "shopping": "Shopping",
+                                            "organizing": "Organizing",
+                                            "gardening": "Gardening",
+                                            "admin": "Administrative",
+                                            "other": "Other"
+                                        },
+                                        selected="all"
+                                    )
+                                ),
+                                ui.div(
+                                    {"class": "col-md-3"},
+                                    ui.input_select(
+                                        "filter_assigned",
+                                        "Assigned To",
+                                        choices={"all": "All Members"},
+                                        selected="all"
+                                    )
+                                ),
+                                ui.div(
+                                    {"class": "col-md-3"},
+                                    ui.input_action_button("refresh_tasks", "Refresh", class_="btn btn-outline-primary")
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            
+            # Task statistics
+            ui.div(
+                {"class": "row mb-4"},
+                ui.output_ui("task_stats")
+            ),
+            
+            # Task list
+            ui.div(
+                {"class": "row"},
+                ui.div(
+                    {"class": "col-12"},
+                    ui.div(
+                        {"class": "card"},
+                        ui.div({"class": "card-header"}, "📋 Task List"),
+                        ui.div(
+                            {"class": "card-body"},
+                            ui.output_ui("task_list")
+                        )
+                    )
+                )
             )
         )
     
@@ -616,7 +879,390 @@ def server(input, output, session):
                 "This module is under development. Features will include user preferences, system configuration, and backup management."
             )
         )
-
+    
+    # Task Management Server Logic
+    
+    # Create sample tasks if none exist
+    @reactive.Effect
+    def _create_sample_tasks():
+        try:
+            db = next(get_database())
+            existing_tasks = db.query(Task).first()
+            if not existing_tasks:
+                sample_tasks = [
+                    Task(
+                        title="Clean Kitchen",
+                        description="Deep clean kitchen including appliances and counters",
+                        category=TaskCategory.CLEANING,
+                        priority=TaskPriority.HIGH,
+                        assigned_to="Mom",
+                        created_by="Admin",
+                        due_date=date.today() + timedelta(days=2),
+                        location="Kitchen"
+                    ),
+                    Task(
+                        title="Fix Leaky Faucet",
+                        description="Repair the bathroom faucet that's been dripping",
+                        category=TaskCategory.MAINTENANCE,
+                        priority=TaskPriority.MEDIUM,
+                        assigned_to="Dad",
+                        created_by="Admin",
+                        due_date=date.today() + timedelta(days=5),
+                        location="Bathroom"
+                    ),
+                    Task(
+                        title="Grocery Shopping",
+                        description="Weekly grocery shopping - check list on fridge",
+                        category=TaskCategory.SHOPPING,
+                        priority=TaskPriority.MEDIUM,
+                        assigned_to="Mom",
+                        created_by="Admin",
+                        due_date=date.today() + timedelta(days=1),
+                        location="Grocery Store"
+                    ),
+                    Task(
+                        title="Organize Garage",
+                        description="Sort and organize items in garage, donate unused items",
+                        category=TaskCategory.ORGANIZING,
+                        priority=TaskPriority.LOW,
+                        assigned_to="Dad",
+                        created_by="Admin",
+                        due_date=date.today() + timedelta(days=14),
+                        location="Garage"
+                    ),
+                    Task(
+                        title="Water Plants",
+                        description="Water all indoor and outdoor plants",
+                        category=TaskCategory.GARDENING,
+                        priority=TaskPriority.HIGH,
+                        assigned_to="Kid1",
+                        created_by="Admin",
+                        due_date=date.today(),
+                        location="House & Garden"
+                    )
+                ]
+                
+                for task in sample_tasks:
+                    db.add(task)
+                db.commit()
+            db.close()
+        except Exception as e:
+            print(f"Error creating sample tasks: {e}")
+    
+    # Task creation handler
+    @reactive.Effect
+    @reactive.event(input.create_task)
+    def _create_task():
+        if not input.task_title() or not input.task_title().strip():
+            return
+        
+        try:
+            db = next(get_database())
+            new_task = Task(
+                title=input.task_title().strip(),
+                description=input.task_description() or None,
+                category=TaskCategory(input.task_category()),
+                priority=TaskPriority(input.task_priority()),
+                assigned_to=input.task_assigned_to() or None,
+                created_by="Current User",  # Would be actual user in real app
+                due_date=input.task_due_date() if input.task_due_date() else None,
+                location=input.task_location() or None
+            )
+            
+            db.add(new_task)
+            db.commit()
+            db.close()
+            
+            # Clear form after successful creation
+            # Note: In a real app, you'd update the inputs programmatically
+            
+        except Exception as e:
+            print(f"Error creating task: {e}")
+    
+    # Clear form handler
+    @reactive.Effect
+    @reactive.event(input.clear_task_form)
+    def _clear_task_form():
+        # In a real Shiny app, you'd reset the input values here
+        pass
+    
+    # Task statistics output
+    @output
+    @render.ui
+    def task_stats():
+        try:
+            db = next(get_database())
+            
+            # Get all active tasks
+            all_tasks = db.query(Task).filter(Task.is_active == True).all()
+            
+            # Calculate statistics
+            total_tasks = len(all_tasks)
+            pending_tasks = len([t for t in all_tasks if t.status == TaskStatus.PENDING])
+            in_progress_tasks = len([t for t in all_tasks if t.status == TaskStatus.IN_PROGRESS])
+            completed_tasks = len([t for t in all_tasks if t.status == TaskStatus.COMPLETED])
+            overdue_tasks = len([t for t in all_tasks if t.is_overdue])
+            
+            db.close()
+            
+            return ui.div(
+                ui.div(
+                    {"class": "col-md-2"},
+                    ui.div(
+                        {"class": "metric-card text-center", "style": "background: linear-gradient(45deg, #6c757d, #495057);"},
+                        ui.div(str(total_tasks), {"class": "metric-number"}),
+                        ui.div("Total Tasks", {"class": "metric-label"})
+                    )
+                ),
+                ui.div(
+                    {"class": "col-md-2"},
+                    ui.div(
+                        {"class": "metric-card text-center", "style": "background: linear-gradient(45deg, #ffc107, #e0a800);"},
+                        ui.div(str(pending_tasks), {"class": "metric-number"}),
+                        ui.div("Pending", {"class": "metric-label"})
+                    )
+                ),
+                ui.div(
+                    {"class": "col-md-2"},
+                    ui.div(
+                        {"class": "metric-card text-center", "style": "background: linear-gradient(45deg, #17a2b8, #138496);"},
+                        ui.div(str(in_progress_tasks), {"class": "metric-number"}),
+                        ui.div("In Progress", {"class": "metric-label"})
+                    )
+                ),
+                ui.div(
+                    {"class": "col-md-2"},
+                    ui.div(
+                        {"class": "metric-card text-center", "style": "background: linear-gradient(45deg, #28a745, #1e7e34);"},
+                        ui.div(str(completed_tasks), {"class": "metric-number"}),
+                        ui.div("Completed", {"class": "metric-label"})
+                    )
+                ),
+                ui.div(
+                    {"class": "col-md-2"},
+                    ui.div(
+                        {"class": "metric-card text-center", "style": "background: linear-gradient(45deg, #dc3545, #c82333);"},
+                        ui.div(str(overdue_tasks), {"class": "metric-number"}),
+                        ui.div("Overdue", {"class": "metric-label"})
+                    )
+                ),
+                ui.div(
+                    {"class": "col-md-2"},
+                    ui.div(
+                        {"class": "metric-card text-center", "style": "background: linear-gradient(45deg, #007bff, #0056b3);"},
+                        ui.div(f"{completed_tasks}/{total_tasks}", {"class": "metric-number", "style": "font-size: 1.8rem;"}),
+                        ui.div("Completion", {"class": "metric-label"})
+                    )
+                ),
+                class_="row"
+            )
+            
+        except Exception as e:
+            return ui.div(
+                {"class": "alert alert-warning"},
+                f"Error loading task statistics: {str(e)}"
+            )
+    
+    # Task list output
+    @output
+    @render.ui
+    def task_list():
+        try:
+            db = next(get_database())
+            
+            # Get filter values
+            status_filter = input.filter_status() if hasattr(input, 'filter_status') and input.filter_status() else "all"
+            category_filter = input.filter_category() if hasattr(input, 'filter_category') and input.filter_category() else "all"
+            
+            # Build query
+            query = db.query(Task).filter(Task.is_active == True)
+            
+            # Apply filters
+            if status_filter != "all":
+                if status_filter == "overdue":
+                    # Filter for overdue tasks
+                    query = query.filter(
+                        Task.due_date < date.today(),
+                        Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS])
+                    )
+                else:
+                    query = query.filter(Task.status == TaskStatus(status_filter))
+            
+            if category_filter != "all":
+                query = query.filter(Task.category == TaskCategory(category_filter))
+            
+            # Get tasks ordered by priority and due date
+            tasks = query.order_by(
+                Task.priority.desc(),
+                Task.due_date.asc().nullslast()
+            ).all()
+            
+            db.close()
+            
+            if not tasks:
+                return ui.div(
+                    {"class": "text-center py-4"},
+                    ui.p("No tasks found matching the current filters.", {"class": "text-muted"})
+                )
+            
+            # Build task cards
+            task_cards = []
+            for task in tasks:
+                # Determine status styling
+                if task.is_overdue:
+                    status_class = "border-danger"
+                    status_badge = "badge bg-danger"
+                elif task.status == TaskStatus.COMPLETED:
+                    status_class = "border-success"
+                    status_badge = "badge bg-success"
+                elif task.status == TaskStatus.IN_PROGRESS:
+                    status_class = "border-info"
+                    status_badge = "badge bg-info"
+                else:
+                    status_class = "border-warning"
+                    status_badge = "badge bg-warning text-dark"
+                
+                # Priority styling
+                priority_colors = {
+                    TaskPriority.LOW: "text-muted",
+                    TaskPriority.MEDIUM: "text-warning",
+                    TaskPriority.HIGH: "text-danger",
+                    TaskPriority.URGENT: "text-danger fw-bold"
+                }
+                priority_class = priority_colors.get(task.priority, "text-muted")
+                
+                # Due date formatting
+                due_date_text = ""
+                if task.due_date:
+                    days_until = task.days_until_due
+                    if task.is_overdue:
+                        due_date_text = f"Overdue by {abs(days_until)} days"
+                        due_date_class = "text-danger"
+                    elif days_until == 0:
+                        due_date_text = "Due today"
+                        due_date_class = "text-warning"
+                    elif days_until <= 3:
+                        due_date_text = f"Due in {days_until} days"
+                        due_date_class = "text-warning"
+                    else:
+                        due_date_text = f"Due in {days_until} days"
+                        due_date_class = "text-muted"
+                else:
+                    due_date_text = "No due date"
+                    due_date_class = "text-muted"
+                
+                task_card = ui.div(
+                    {"class": f"card mb-3 {status_class}"},
+                    ui.div(
+                        {"class": "card-body"},
+                        ui.div(
+                            {"class": "d-flex justify-content-between align-items-start"},
+                            ui.div(
+                                ui.h5(task.title, {"class": "card-title mb-1"}),
+                                ui.div(
+                                    {"class": "mb-2"},
+                                    ui.span(task.status_display, {"class": status_badge}),
+                                    " ",
+                                    ui.span(task.priority_display, {"class": f"badge bg-light text-dark {priority_class}"}),
+                                    " ",
+                                    ui.span(task.category_display, {"class": "badge bg-secondary"})
+                                )
+                            ),
+                            ui.div(
+                                {"class": "text-end"},
+                                ui.small(due_date_text, {"class": due_date_class}),
+                                ui.br() if task.assigned_to else "",
+                                ui.small(f"👤 {task.assigned_to}", {"class": "text-muted"}) if task.assigned_to else ""
+                            )
+                        ),
+                        ui.p(task.description, {"class": "card-text"}) if task.description else "",
+                        ui.div(
+                            {"class": "d-flex justify-content-between align-items-center"},
+                            ui.div(
+                                ui.small(f"📍 {task.location}", {"class": "text-muted"}) if task.location else "",
+                                ui.br() if task.location and task.created_date else "",
+                                ui.small(f"Created: {task.created_date.strftime('%Y-%m-%d')}", {"class": "text-muted"}) if task.created_date else ""
+                            ),
+                            ui.div(
+                                {"class": "btn-group"},
+                                ui.input_action_button(f"task_complete_{task.id}", "✅ Complete", 
+                                                      class_="btn btn-sm btn-success") if task.status != TaskStatus.COMPLETED else "",
+                                ui.input_action_button(f"task_progress_{task.id}", "⏳ Progress", 
+                                                      class_="btn btn-sm btn-info") if task.status == TaskStatus.PENDING else "",
+                                ui.input_action_button(f"task_edit_{task.id}", "✏️ Edit", 
+                                                      class_="btn btn-sm btn-outline-primary")
+                            )
+                        )
+                    )
+                )
+                task_cards.append(task_card)
+            
+            return ui.div(*task_cards)
+            
+        except Exception as e:
+            return ui.div(
+                {"class": "alert alert-danger"},
+                f"Error loading tasks: {str(e)}"
+            )
+    
+    # Dynamic task action handlers
+    # Note: In a production app, you'd want more sophisticated handling for dynamic button IDs
+    
+    # Update family member choices based on existing assignments
+    @reactive.Effect
+    def _update_assigned_choices():
+        try:
+            db = next(get_database())
+            # Get unique assigned_to values
+            assigned_members = db.query(Task.assigned_to).filter(
+                Task.assigned_to.isnot(None),
+                Task.is_active == True
+            ).distinct().all()
+            
+            choices = {"all": "All Members"}
+            for member_tuple in assigned_members:
+                member = member_tuple[0]
+                if member:
+                    choices[member] = member
+            
+            # Would update the select input choices here in a real app
+            db.close()
+            
+        except Exception as e:
+            print(f"Error updating assigned choices: {e}")
+    
+    # Sample function to handle task completion
+    # In a real app, you'd need to dynamically bind these based on task IDs
+    def handle_task_completion(task_id: int):
+        """Handle marking a task as completed"""
+        try:
+            db = next(get_database())
+            task = db.query(Task).filter(Task.id == task_id).first()
+            if task:
+                task.mark_completed("Current User")
+                db.commit()
+            db.close()
+        except Exception as e:
+            print(f"Error completing task {task_id}: {e}")
+    
+    def handle_task_progress(task_id: int):
+        """Handle marking a task as in progress"""
+        try:
+            db = next(get_database())
+            task = db.query(Task).filter(Task.id == task_id).first()
+            if task:
+                task.mark_in_progress()
+                db.commit()
+            db.close()
+        except Exception as e:
+            print(f"Error updating task progress {task_id}: {e}")
+    
+    # Refresh tasks handler
+    @reactive.Effect
+    @reactive.event(input.refresh_tasks)
+    def _refresh_tasks():
+        # Force refresh of reactive outputs
+        pass
 # Create the Shiny app
 app = App(app_ui, server)
 

@@ -75,7 +75,7 @@ def init_database():
     """
     try:
         # Import all existing models to ensure they are registered
-        from models import user, maintenance
+        from models import user, maintenance, task
         
         # Create all tables
         Base.metadata.create_all(bind=engine)
